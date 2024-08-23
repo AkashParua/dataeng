@@ -1,0 +1,129 @@
+uuid: c4db1ed6-4373-4eee-a37e-fa41f25419c4
+### Instruction:
+**Identify Top-Performing Sales Representatives by Region and Product Category**
+
+Analyze sales data to determine the top-performing sales representatives by region and product category. The goal is to provide insights on which sales representatives are exceling in specific regions and product categories, and to identify trends in sales performance.
+
+### Input:
+Schema:
+[
+    {
+        "name": "sales_reps",
+        "columns": [
+            {"name": "rep_id", "type": "INT", "constraints": ["PRIMARY KEY"]},
+            {"name": "name", "type": "VARCHAR(255)"},
+            {"name": "region", "type": "VARCHAR(255)"},
+            {"name": "product_category", "type": "VARCHAR(255)"}
+        ]
+    },
+    {
+        "name": "sales_data",
+        "columns": [
+            {"name": "sale_id", "type": "INT", "constraints": ["PRIMARY KEY"]},
+            {"name": "rep_id", "type": "INT", "constraints": ["FOREIGN KEY", "REFERENCES sales_reps(rep_id)"]},
+            {"name": "region", "type": "VARCHAR(255)"},
+            {"name": "product_category", "type": "VARCHAR(255)"},
+            {"name": "sale_amount", "type": "DECIMAL(10,2)"}
+        ]
+    },
+    {
+        "name": "region_sales",
+        "columns": [
+            {"name": "region", "type": "VARCHAR(255)"},
+            {"name": "total_sales", "type": "DECIMAL(10,2)"}
+        ]
+    }
+]
+------------------
+uuid: 585e9e58-a634-4820-a186-783d195eaf96
+### Instruction:
+**Predict Customer Churn by Analyzing Historical Account Activity**
+
+Develop a SQL query to analyze historical account activity data to predict customer churn. The goal is to identify which customers are most likely to churn based on their past behavior, such as login frequency, payment history, and support ticket creation.
+
+### Input:
+Schema:
+[
+    {
+        "name": "customers",
+        "columns": [
+            {"name": "customer_id", "type": "INT", "constraints": ["PRIMARY KEY"]},
+            {"name": "name", "type": "VARCHAR(255)"},
+            {"name": "email", "type": "VARCHAR(255)"},
+            {"name": "signup_date", "type": "DATE"}
+        ]
+    },
+    {
+        "name": "login_history",
+        "columns": [
+            {"name": "login_id", "type": "INT", "constraints": ["PRIMARY KEY"]},
+            {"name": "customer_id", "type": "INT", "constraints": ["FOREIGN KEY", "REFERENCES customers(customer_id)"]},
+            {"name": "login_date", "type": "DATE"},
+            {"name": "login_frequency", "type": "INT"}
+        ]
+    },
+    {
+        "name": "payment_history",
+        "columns": [
+            {"name": "payment_id", "type": "INT", "constraints": ["PRIMARY KEY"]},
+            {"name": "customer_id", "type": "INT", "constraints": ["FOREIGN KEY", "REFERENCES customers(customer_id)"]},
+            {"name": "payment_date", "type": "DATE"},
+            {"name": "payment_amount", "type": "DECIMAL(10,2)"}
+        ]
+    },
+    {
+        "name": "support_tickets",
+        "columns": [
+            {"name": "ticket_id", "type": "INT", "constraints": ["PRIMARY KEY"]},
+            {"name": "customer_id", "type": "INT", "constraints": ["FOREIGN KEY", "REFERENCES customers(customer_id)"]},
+            {"name": "ticket_date", "type": "DATE"}
+        ]
+    }
+]
+------------------
+uuid: cb417da0-6dc1-4af4-bd46-0ca9cd09b26f
+### Instruction:
+**Analyze Inventory Levels and Track Product Movement across Warehouses**
+
+Develop a SQL query to analyze inventory levels and track product movement across warehouses. The goal is to identify which products are in stock, which products are low in stock, and which warehouses are experiencing inventory imbalances.
+
+### Input:
+Schema:
+[
+    {
+        "name": "products",
+        "columns": [
+            {"name": "product_id", "type": "INT", "constraints": ["PRIMARY KEY"]},
+            {"name": "product_name", "type": "VARCHAR(255)"},
+            {"name": "product_category", "type": "VARCHAR(255)"}
+        ]
+    },
+    {
+        "name": "warehouses",
+        "columns": [
+            {"name": "warehouse_id", "type": "INT", "constraints": ["PRIMARY KEY"]},
+            {"name": "warehouse_name", "type": "VARCHAR(255)"},
+            {"name": "location", "type": "VARCHAR(255)"}
+        ]
+    },
+    {
+        "name": "inventory",
+        "columns": [
+            {"name": "inventory_id", "type": "INT", "constraints": ["PRIMARY KEY"]},
+            {"name": "warehouse_id", "type": "INT", "constraints": ["FOREIGN KEY", "REFERENCES warehouses(warehouse_id)"]},
+            {"name": "product_id", "type": "INT", "constraints": ["FOREIGN KEY", "REFERENCES products(product_id)"]},
+            {"name": "quantity", "type": "INT"}
+        ]
+    },
+    {
+        "name": "product_movements",
+        "columns": [
+            {"name": "movement_id", "type": "INT", "constraints": ["PRIMARY KEY"]},
+            {"name": "warehouse_id", "type": "INT", "constraints": ["FOREIGN KEY", "REFERENCES warehouses(warehouse_id)"]},
+            {"name": "product_id", "type": "INT", "constraints": ["FOREIGN KEY", "REFERENCES products(product_id)"]},
+            {"name": "movement_date", "type": "DATE"},
+            {"name": "quantity", "type": "INT"}
+        ]
+    }
+]
+------------------
