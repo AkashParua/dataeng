@@ -1,6 +1,6 @@
 import pandas as pd
-from IBM_WatsonX.utils.utils import run_sql_query, result_to_df, generate_graph, pandas_dataframe_to_sqlite
-from IBM_WatsonX.utils.llm_utils import load_config, init_llm, NQLengine, perform_nql_query
+from utils.llm_utils import load_config, init_llm, NQLengine, perform_nql_query
+from utils.utils import run_sql_query, result_to_df, generate_graph, pandas_dataframe_to_sqlite
 def main():
     df = pd.read_csv('utils/demo_data.csv')
     conn, engine = pandas_dataframe_to_sqlite(df, 'demo_data')

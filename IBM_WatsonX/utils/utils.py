@@ -7,7 +7,7 @@ from typing import List, Tuple
 import plotly.express as px
 from sqlalchemy import text
 import sqlglot
-
+import streamlit as st
 
 def extract_tables(sql_query: str) -> list:
     """
@@ -18,18 +18,22 @@ def extract_tables(sql_query: str) -> list:
     table_names = [table.name for table in tables]
     return table_names
 
+def init_sqlite_engine(engine: Engine) -> Connection:
+    """
+    This function initializes a sqlite engine.
+    """
+    engine = create_engine(f'sqlite:///database.db', echo=False)
+    conn = engine.connect()
+    return engine, conn
 
-def pandas_dataframe_to_sqlite(df: pd.DataFrame, table_name: str) -> tuple[Connection, Engine]:
+def pandas_dataframe_to_sqlite(df: pd.DataFrame, table_name: str, conn : Connection):
     """
     This function takes a pandas dataframe and saves it to ain memory sqlite database.
     Args:
         df: pandas dataframe
         table_name: name of the table
     """
-    engine = create_engine(f'sqlite:///:memory:', echo=False)
-    conn = engine.connect()
     df.to_sql(table_name, conn, if_exists='replace', index=False)
-    return conn, engine
 
 
 def sqlite_to_pandas_dataframe(conn: Connection, table_name: str) -> pd.DataFrame:
@@ -104,7 +108,22 @@ def generate_graph(df: pd.DataFrame, x: str, y: str, title: str, x_label: str, y
     return fig
 
 
-def generate_mermaid_graph(existing_graph: str, query: str, table_created: str) -> str:
+def fetch_all_tables(conn: Connection) :
+    """
+    Fetch all table names from the SQLite database.
+
+    Parameters:
+    conn (sqlalchemy.engine.Connection): The connection object to the SQLite database.
+
+    Returns:
+    list: A list of table names.
+    """
+    query = "SELECT name FROM sqlite_master WHERE type='table';"
+    result = conn.execute(text(query)).fetchall()
+    return [row[0] for row in result]
+
+
+def generate_mermaid_graph(existing_graph: List[str], query: str, table_created: str) -> List[str]:
     """
     This function takes an existing mermaid graph and adds a new table to it.
     Args:
@@ -115,18 +134,36 @@ def generate_mermaid_graph(existing_graph: str, query: str, table_created: str) 
     tables = extract_tables(query)
     tables = list(set(tables))
     for table in tables:
-        existing_graph += f'{table} --> {table_created}\n'
+        existing_graph.append(f'{table} --> {table_created}\n')
+    return existing_graph
+
+def remove_mermaid_node(existing_graph: List[str], table_name: str) -> List[str]:
+    """
+    This function removes a node from a mermaid graph.
+    Args:
+        existing_graph: existing mermaid graph
+        table_name: name of the table to remove
+    """
+    existing_graph = [line for line in existing_graph if table_name not in line]
     return existing_graph
 
 
-if __name__ == '__main__':
-    df = pd.read_csv('train.csv')
-    conn, engine = pandas_dataframe_to_sqlite(df, 'test')
-    df = sqlite_to_pandas_dataframe(conn, 'test')
-    print(df.head())
-    print(run_sql_query(conn, 'SELECT * FROM test;'))
-    print(result_to_df(run_sql_query(conn, 'SELECT * FROM test;')))
-    print(extract_tables('SELECT * FROM test;'))
-    fig = generate_graph(df, 'date', 'orders',
-                         'date-v-orders', 'date', 'orders', 'line')
-    conn.close()
+def get_engine_metadata(engine):
+    """
+    Retrieve and display metadata of the given SQLAlchemy engine.
+
+    Parameters:
+    engine (sqlalchemy.engine.Engine): The SQLAlchemy engine object.
+
+    Returns:
+    dict: A dictionary containing metadata information.
+    """
+    metadata = MetaData()
+    metadata.reflect(bind=engine)
+    
+    metadata_info = {}
+    for table in metadata.tables.values():
+        columns = [column.name for column in table.columns]
+        metadata_info[table.name] = columns
+    
+    return metadata_info

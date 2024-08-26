@@ -54,4 +54,4 @@ def perform_nql_query(query: str, query_engine: NLSQLTableQueryEngine) -> List[s
     str_response = response.response
     sql_query = response.metadata['sql_query']
     return str_response, sql_query
-    
+
