@@ -3,7 +3,8 @@ import pandas as pd
 from utils.utils import run_sql_query, result_to_df, generate_graph, pandas_dataframe_to_sqlite, init_sqlite_engine, fetch_all_tables, get_engine_metadata
 from utils.llm_utils import load_config, init_llm, NQLengine, perform_nql_query
 from sqlalchemy import text, create_engine
-import os
+from utils.utils import generate_mermaid_graph, remove_mermaid_node
+import streamlit_mermaid as stmd
 
 def main():
 
@@ -20,7 +21,11 @@ def main():
         st.session_state['result_df'] = None
     if 'engine' not in st.session_state:
         st.session_state['engine'] = create_engine('sqlite:///mydatabase.db', echo=False)  # Switch to file-based SQLite database
+    if 'mermaid' not in st.session_state:
+        st.session_state['mermaid'] = ["graph TD\n"]
     
+
+
     conn = st.session_state['engine'].connect()
     st.write(get_engine_metadata(conn))
     
@@ -67,6 +72,7 @@ def main():
 
     st.title("DUNGEON MASTER 🧙")
     user_input = st.text_input("You:", key="Ask the Dungeon Master")
+    table_name = st.text_input("Table Name:", key="Table Name")
 
     if st.button("Send"):
         str_response, sql_query = perform_nql_query(user_input, query_engine)
@@ -75,12 +81,17 @@ def main():
             st.session_state['messages'].append(str_response)
             st.session_state['result_df'] = result_to_df(conn.execute(text(sql_query)).fetchall())
             st.session_state['queries'].append(sql_query)
+            pandas_dataframe_to_sqlite(st.session_state['result_df'], table_name, conn)
+            st.session_state['mermaid'] = generate_mermaid_graph(st.session_state['mermaid'], st.session_state['queries'][-1], table_name)
+            st.write(st.session_state['result_df'])
         except Exception as e:
             st.write(f"Error executing query: {e}")
             st.session_state['queries'].append(f'Query failed due to {e}. Reword your query.')
 
-    if st.session_state['result_df'] is not None:
-        st.write(st.session_state['result_df'])
+    mermaid_str =  ''.join(st.session_state['mermaid'])
+    print(mermaid_str)
+    stmd.st_mermaid(mermaid_str)
+    
 
     for m, q in zip(st.session_state['messages'][::-1], st.session_state['queries'][::-1]):
         st.write(f"DM: {m}")
